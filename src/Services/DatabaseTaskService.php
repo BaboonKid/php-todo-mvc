@@ -27,7 +27,16 @@ class DatabaseTaskService implements TaskServiceInterface {
   public function get ( int $id ) : ?TaskEntity {
      $stmt = $this->db->db->prepare("SELECT * FROM tasks WHERE id = :id");
      $stmt->execute(['id' => $id]);
-     $result = $stmt->fetch(PDO::FETCH_ASSOC);
+     $task = $stmt->fetch(PDO::FETCH_ASSOC);
+     $result = new TaskEntity();
+     $result->setId($task['id'])
+            ->setTitle($task['title'])
+            ->setDescription($task['description'])
+            ->setCompleted($task['completed'])
+            ->setCreatedAt($task['createdAt'])
+            ->setUpdatedAt($task['updatedAt'])
+            ->setCompletedAt($task['completedAt']);
+    return $result;
   }
 
   /**
@@ -86,13 +95,16 @@ class DatabaseTaskService implements TaskServiceInterface {
    * @inheritDoc
    */
   public function create ( TaskEntity $task ) : TaskEntity {
-    $lastId = count($this->data);
+    $stmt = $this->db->db->prepare("INSERT INTO tasks (title, description, completed, completedAt) VALUES (:title, :description, :completed, :completedAt)");
+
+    $stmt -> bindValue(':title', $task->getTitle());
+    $stmt -> bindValue(':description', $task->getDescription());
+    $stmt -> bindValue(':completed', $task->isCompleted() ? 1 : 0);
+    $stmt -> bindValue(':completedAt', $task->getCompletedAt());
+
+    $stmt->execute();
     
-    $this->data[$lastId] = $task;
-    $task->setId($lastId);
-    $task->setCreatedAt( date("Y-m-d H:i:s") );
-    
-    return $task;
+    return $this -> get($this->db->db->lastInsertId());
   }
   
   
@@ -100,8 +112,18 @@ class DatabaseTaskService implements TaskServiceInterface {
    * @inheritDoc
    */
   public function update ( TaskEntity $task ) : TaskEntity {
-    $this->data[ $task->getId() ] = $task;
-    return $task;
+
+    $stmt = $this->db->db->prepare("UPDATE tasks SET title = :title, description = :description, completed = :completed, completedAt = :completedAt WHERE id = :id");
+
+    $stmt -> bindValue(':title', $task->getTitle());
+    $stmt -> bindValue(':description', $task->getDescription());
+    $stmt -> bindValue(':completed', $task->isCompleted() ? 1 : 0);
+    $stmt -> bindValue(':completedAt', $task->getCompletedAt());
+    $stmt -> bindValue(':id', $task->getId());
+
+    $stmt -> execute();
+
+    return $this -> get($task->getId());
   }
   
   
@@ -109,6 +131,11 @@ class DatabaseTaskService implements TaskServiceInterface {
    * @inheritDoc
    */
   public function delete ( int $id ) : void {
-    unset( $this->data[ $id ] );
+
+    $stmt = $this->db->db->prepare("DELETE FROM tasks WHERE id = :id");
+
+    $stmt -> bindValue(':id', $id);
+
+    $stmt->execute();
   }
 }
