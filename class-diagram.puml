@@ -26,11 +26,9 @@ class TaskEntity {
 }
 
 'Services
-note top of TaskServiceInterface : list() retourne un tableau [page: int, total: int, perPage:int, tasks: TaskEntity[]]
-
 interface TaskServiceInterface<<Singleton>> {
   + get( int id ) : TaskEntity | null
-  + list ( array args ) : array
+  + list ( array args ) : TaskEntity[]
   + create( TaskEntity task ) : TaskEntity
   + update( TaskEntity task ) : TaskEntity
   + delete( int id ) : void

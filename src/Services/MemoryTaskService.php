@@ -21,7 +21,7 @@ class MemoryTaskService implements TaskServiceInterface {
    */
   private function init() : void {
     $this->data = [];
-    for ($i = 0; $i < 30; $i++) {
+    for ($i = 0; $i < 32; $i++) {
       $this->data[$i] = (new TaskEntity())
         ->setId( $i )
         ->setTitle("Tâche n°" . $i + 1 )
@@ -40,8 +40,7 @@ class MemoryTaskService implements TaskServiceInterface {
   public function get ( int $id ) : ?TaskEntity {
     return $this->data[$id] ?? null;
   }
-  
-  
+
   /**
    * @inheritDoc
    */
@@ -91,11 +90,11 @@ class MemoryTaskService implements TaskServiceInterface {
             : 1;
       endswitch;
     } );
-  
+    
     return array(
-      'page' => $args['page'] ?? 1,
+      'page'=> $args['page'] ?? 1,
       'perPage' => $args['perPage'] ?? 10,
-      'total' => count($results),
+      'total' => count( $results ),
       'tasks' => $results
     );
   }
